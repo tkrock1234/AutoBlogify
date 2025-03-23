@@ -151,3 +151,19 @@ Step 2 で選んだ記事アイデアをもとに、構成案と本文を生成�
 - サムネイル・イメージ画像の自動生成（DALL·E 連携など）
 - 記事の予約投稿・スケジュール管理
 - 自然言語での「記事内容の修正依頼」機能（例：「もっとカジュアルにして」）
+
+AutoBlogify/
+├── branding_ai/ # Step1: ブランディング AI 関連
+│ ├── prompt.py # プロンプトテンプレート
+│ ├── run.py # CLI で動かすスクリプト
+│ └── examples/ # 入出力の例など
+├── idea_ai/ # Step2: 記事アイデア生成
+├── writer_ai/ # Step3: 記事構成・本文生成
+├── data/ # JSON データ保存場所（ローカル DB 的に）
+│ ├── brand_sheets/
+│ └── generated_articles/
+├── api/ # （将来的に）FastAPI などの API 化
+├── frontend/ # Next.js などフロントエンド実装
+├── utils/ # 共通処理（OpenAI クライアント、ロガーなど）
+├── README.md
+└── requirements.txt # Python 依存パッケージ
