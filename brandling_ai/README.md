@@ -1,40 +1,79 @@
-# Branding AI - AutoBlogify
+# branding_ai/chat_runner.py
 
-## 📌 このモジュールで実装すること
+import os
+import json
+from datetime import datetime
+from pathlib import Path
 
-このモジュールは AutoBlogify の Step 1「ブランディング設計 AI」に対応しています。  
-ユーザーから商品・ブランドに関する情報を対話形式で取得し、それを元にマーケティングやコンテンツ生成に活用できる構造化データ（JSON形式）を生成します。
+# 質問テンプレート
+questions = [
+    ("product", "まず、どんな商品を扱っていますか？（例：オーガニック紅茶）"),
+    ("category", "商品はどんなカテゴリに分類されますか？（例：飲料、雑貨など）"),
+    ("features", "その商品の特徴やこだわりを教えてください（カンマ区切りでOK）"),
+    ("target", "どんな人に届けたいですか？（年齢層・ライフスタイルなど）"),
+    ("values", "ブランドが大切にしている価値観は？（カンマ区切りでOK）"),
+    ("tone", "文章やデザインにおけるブランドのトーンは？（例：やさしく、上品など）"),
+    ("use_scenes", "どんなシーンで使われることを想定していますか？（カンマ区切りでOK）")
+]
 
-## 🎯 なぜ実装するのか（目的）
+# データ保存先
+timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+chat_log_path = Path(f"data/chat_sessions/{timestamp}.json")
+markdown_path = Path(f"data/brand_sheets/{timestamp}.md")
 
-- ユーザーのブランドや商品に込めた想いを明文化することで、AIによる記事提案・生成をより的確にする
-- 記事に一貫性を持たせ、ブランドとしての世界観・トーンをブレさせないようにする
-- これまで暗黙的だったブランドの価値観を「見える化」し、コンテンツ戦略の起点とする
+# 会話ログと回答格納用
+conversation = []
+answers = {}
 
-## 🧭 実装方針
+# 会話開始
+print("🗣 ブランドづくりを一緒に始めましょう。質問に答えてください。\n")
 
-1. **対話形式で入力を収集**  
-   - CLI形式で7つの質問（商品名・特徴・ターゲットなど）に答えてもらう
-2. **プロンプトテンプレートを用意し、OpenAI API で整形**
-3. **JSON形式で保存し、次の工程（記事アイデア生成）へ渡せる形にする**
-4. **自然言語の入力を受けても、整った形式に変換できるようプロンプトを工夫する**
+for key, question in questions:
+    print(f"🤖 {question}")
+    answer = input("あなた: ").strip()
+    answers[key] = answer
+    conversation.append({"role": "assistant", "message": question})
+    conversation.append({"role": "user", "message": answer})
 
-## 🔧 ファイル構成
+# フォルダ作成
+chat_log_path.parent.mkdir(parents=True, exist_ok=True)
+markdown_path.parent.mkdir(parents=True, exist_ok=True)
 
-- `prompt.py`: プロンプトテンプレート管理
-- `run.py`: CLI実行スクリプト（ユーザー入力→AI出力）
-- `examples/`: 入力・出力のサンプル保管
+# ログ保存（JSON）
+with open(chat_log_path, "w", encoding="utf-8") as f:
+    json.dump({
+        "timestamp": timestamp,
+        "conversation": conversation
+    }, f, ensure_ascii=False, indent=2)
 
-## ✅ 出力例
+# Markdown出力
+markdown = f"""# ブランドシート（{timestamp}）
 
-```json
-{
-  "product": "オーガニック紅茶",
-  "category": "飲料",
-  "features": ["香りにこだわり", "リラックス効果", "環境配慮のパッケージ"],
-  "target": "30代〜40代女性。在宅ワーカーや子育て中のママ",
-  "values": ["丁寧な暮らし", "サステナビリティ", "自分時間の充実"],
-  "tone": "やさしく上品で落ち着いたトーン",
-  "use_scenes": ["朝の自分時間", "夜寝る前のリラックスタイム"]
-}
-```
+## 商品概要
+{answers['product']}
+
+## カテゴリ
+{answers['category']}
+
+## 特徴
+- {"\n- ".join(answers['features'].split(","))}
+
+## ターゲット
+{answers['target']}
+
+## ブランド価値観
+- {"\n- ".join(answers['values'].split(","))}
+
+## 使用シーン
+- {"\n- ".join(answers['use_scenes'].split(","))}
+
+## トーン
+{answers['tone']}
+"""
+
+with open(markdown_path, "w", encoding="utf-8") as f:
+    f.write(markdown)
+
+print("\n✅ ブランディング情報を保存しました！")
+print(f"- チャットログ: {chat_log_path}")
+print(f"- ブランドシート: {markdown_path}")
