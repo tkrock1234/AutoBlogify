@@ -1,9 +1,10 @@
 # brandling_ai/run.py
-
+from dotenv import load_dotenv
+import os
 import openai
-from brandling_ai.prompt import get_branding_prompt
 
-openai.api_key = "your-api-key-here"  # 環境変数で管理するのが理想
+load_dotenv()
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 def main():
     print("🔧 ブランド情報を入力してください：")
